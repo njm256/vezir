@@ -1,9 +1,25 @@
 package position
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 )
+
+var chars = map[byte]rune{
+	'R': '♜',
+	'N': '♞',
+	'B': '♗',
+	'Q': '♕',
+	'K': '♔',
+	'P': '♙',
+	'r': '♜',
+	'n': '♞',
+	'b': '♝',
+	'q': '♛',
+	'k': '♚',
+	'p': '♙',
+}
 
 type Fen struct {
 	pos         string
@@ -27,6 +43,10 @@ func NewFen(str string) *Fen {
 }
 
 func (f Fen) String() string {
+	return f.colorString()
+}
+
+func (f Fen) simpleString() string {
 	ranks := strings.Split(f.pos, "/")
 	r := strings.NewReplacer(
 		"1", " ",
@@ -43,6 +63,42 @@ func (f Fen) String() string {
 		newRanks[i] = r.Replace(ranks[i])
 	}
 	return strings.Join(newRanks[:], "\n")
+
+}
+
+func (f Fen) colorString() string {
+	const (
+		ww  = "\033[97;47m"
+		wb  = "\033[97;100m"
+		bw  = "\033[30;47m"
+		bb  = "\033[30;100m"
+		end = "\033[0m"
+	)
+	s := strings.Split(f.simpleString(), "\n")
+	var sb strings.Builder
+	for i := 0; i < 8; i++ {
+		for j := 0; j < 8; j++ {
+			if (i+j)%2 == 0 {
+				if strings.IndexByte("KQRBNP", s[i][j]) != -1 {
+					fmt.Fprintf(&sb, "%s%c ", ww, chars[s[i][j]])
+				} else if strings.IndexByte("kqrbnp", s[i][j]) != -1 {
+					fmt.Fprintf(&sb, "%s%c ", bw, chars[s[i][j]])
+				} else {
+					fmt.Fprintf(&sb, "%s  ", ww)
+				}
+			} else {
+				if strings.IndexByte("KQRBNP", s[i][j]) != -1 {
+					fmt.Fprintf(&sb, "%s%c ", wb, chars[s[i][j]])
+				} else if strings.IndexByte("kqrbnp", s[i][j]) != -1 {
+					fmt.Fprintf(&sb, "%s%c ", bb, chars[s[i][j]])
+				} else {
+					fmt.Fprintf(&sb, "%s  ", bb)
+				}
+			}
+		}
+		fmt.Fprintf(&sb, "%s\n", end)
+	}
+	return sb.String()
 
 }
 

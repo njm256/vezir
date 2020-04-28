@@ -2,9 +2,11 @@ package main
 
 import (
 	"fmt"
+	"github.com/njm256/vezir/position"
 	"os"
 )
 
 func main() {
-	fmt.Println(os.Args[1:])
+	a := position.NewFen(os.Args[1])
+	fmt.Println(a)
 }
