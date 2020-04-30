@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+//TODO find a better one of these. I think I saw one in sunfish?
 var chars = map[byte]rune{
 	'R': '♜',
 	'N': '♞',
