@@ -77,6 +77,7 @@ func (g Game) iMove(s State, pawnMoveOrCapture bool) Game {
 		newGame.prev[k] = v
 	}
 	h := g.board.hashCode()
+	newGame.prev[h] = newGame.prev[h] + 1
 	if s.activeColor == "w" {
 		newGame.moveNo = g.moveNo + 1
 	}
@@ -87,4 +88,46 @@ func (g Game) iMove(s State, pawnMoveOrCapture bool) Game {
 	}
 
 	return newGame
+}
+
+func (s State) Moves() (states []State) {
+	/*
+		var activePlayer army
+		var passivePlayer army
+		if g.board.activeColor == "w" {
+			activePlayer = g.board.wPieces
+			passivePlayer = g.board.bPieces
+		} else {
+			activePlayer = g.board.bPieces
+			passivePlayer = g.board.wPieces
+		}
+	*/
+
+	states = make([]State, 0)
+	states = append(states, s.pawnMoves()...)
+	states = append(states, s.bishopMoves()...)
+	states = append(states, s.knightMoves()...)
+	states = append(states, s.rookMoves()...)
+	states = append(states, s.queenMoves()...)
+	states = append(states, s.kingMoves()...)
+	return
+}
+func (s State) pawnMoves() []State {
+	return nil
+}
+func (s State) kingMoves() []State {
+	moves := make([]State, 8)
+	return moves
+}
+func (s State) knightMoves() []State {
+	return nil
+}
+func (s State) queenMoves() []State {
+	return nil
+}
+func (s State) rookMoves() []State {
+	return nil
+}
+func (s State) bishopMoves() []State {
+	return nil
 }
