@@ -1,64 +1,66 @@
 package position
 
-type squares uint64
+import (
+	"fmt"
+	"strings"
+)
 
-var ranks = map[int]squares{
-	1: 0b0000000000000000000000000000000000000000000000000000000011111111,
-	2: 0b0000000000000000000000000000000000000000000000001111111100000000,
-	3: 0b0000000000000000000000000000000000000000111111110000000000000000,
-	4: 0b0000000000000000000000000000000011111111000000000000000000000000,
-	5: 0b0000000000000000000000001111111100000000000000000000000000000000,
-	6: 0b0000000000000000111111110000000000000000000000000000000000000000,
-	7: 0b0000000011111111000000000000000000000000000000000000000000000000,
-	8: 0b1111111100000000000000000000000000000000000000000000000000000000,
-}
+type squares [8][8]byte
 
-var files = map[byte]squares{
-	'a': 0b0000000100000001000000010000000100000001000000010000000100000001,
-	'b': 0b0000001000000010000000100000001000000010000000100000001000000010,
-	'c': 0b0000010000000100000001000000010000000100000001000000010000000100,
-	'd': 0b0000100000001000000010000000100000001000000010000000100000001000,
-	'e': 0b0001000000010000000100000001000000010000000100000001000000010000,
-	'f': 0b0010000000100000001000000010000000100000001000000010000000100000,
-	'g': 0b0100000001000000010000000100000001000000010000000100000001000000,
-	'h': 0b1000000010000000100000001000000010000000100000001000000010000000,
-}
-
-type army struct {
-	Pawns   squares
-	Knights squares
-	Bishops squares
-	Queens  squares
-	King    squares
-}
 type State struct {
-	wPieces     army
-	bPieces     army
+	board       squares
 	activeColor string
 	castling    string
 	ep          string
 }
 
 type Game struct {
-	board  State
+	state  State
 	hclock int
 	moveNo int
 	prev   map[string]int // maybe map[State]int? seems better to hash the states
 }
 
-func (s State) hashCode() string {
-	return StateToFen(s).String()
+func (g *Game) hashCode() string {
+	return GameToFen(g).String()
 }
 
-func StateToFen(s State) *Fen {
+func GameToFen(s *Game) *Fen {
 	//TODO this
-	return &Fen{}
+	counter := 0
+	var str strings.Builder
+	for i := 0; i < 8; i++ {
+		for j := 0; j < 8; j++ {
+			if s.state.board[i][j] == '.' {
+				counter++
+			} else if counter > 0 {
+				fmt.Fprintf(&str, "%d", counter)
+				counter = 0
+			}
+			fmt.Fprintf(&str, "%c", s.state.board[i][j])
+		}
+		if counter > 0 {
+			fmt.Fprintf(&str, "%d", counter)
+			counter = 0
+		}
+		if i != 7 {
+			str.WriteString("/")
+		}
+	}
+	return &Fen{
+		pos:         str.String(),
+		activeColor: s.state.activeColor,
+		castling:    s.state.castling,
+		ep:          s.state.ep,
+		hClock:      s.hclock,
+		move:        s.moveNo,
+	}
 }
 
 func (g *Game) move(s State, pawnMoveOrCapture bool) {
-	h := g.board.hashCode()
+	h := g.hashCode()
 	g.prev[h] = g.prev[h] + 1
-	g.board = s
+	g.state = s
 	if s.activeColor == "w" {
 		g.moveNo++
 	}
@@ -67,16 +69,17 @@ func (g *Game) move(s State, pawnMoveOrCapture bool) {
 	} else {
 		g.hclock++
 	}
+	//TODO put something here
 }
 
 func (g Game) iMove(s State, pawnMoveOrCapture bool) Game {
 	newGame := Game{}
-	newGame.board = s
+	newGame.state = s
 	newGame.prev = make(map[string]int)
 	for k, v := range g.prev {
 		newGame.prev[k] = v
 	}
-	h := g.board.hashCode()
+	h := g.hashCode()
 	newGame.prev[h] = newGame.prev[h] + 1
 	if s.activeColor == "w" {
 		newGame.moveNo = g.moveNo + 1
@@ -86,7 +89,7 @@ func (g Game) iMove(s State, pawnMoveOrCapture bool) Game {
 	} else {
 		newGame.hclock = g.hclock + 1
 	}
-
+	//TODO put something here
 	return newGame
 }
 
