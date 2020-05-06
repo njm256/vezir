@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/njm256/vezir/position"
 	"os"
+
+	"github.com/njm256/vezir/position"
 )
 
 func main() {

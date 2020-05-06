@@ -117,6 +117,7 @@ func (s State) pawnMoves() []State {
 }
 func (s State) kingMoves() []State {
 	moves := make([]State, 8)
+
 	return moves
 }
 func (s State) knightMoves() []State {
