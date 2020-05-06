@@ -115,8 +115,34 @@ func (s State) Moves() (states []State) {
 	states = append(states, s.kingMoves()...)
 	return
 }
-func (s State) pawnMoves() []State {
-	return nil
+func (s *State) pawnMoves() []State {
+	moves := []State{}
+	var marker byte
+	var dir int
+	if s.activeColor == "w" {
+		marker = 'P'
+		dir = -1
+	} else {
+		marker = 'p'
+		dir = 1
+	}
+	for i := 0; i < 8; i++ {
+		for j := 1; j < 7; j++ {
+			//TODO en passant
+			//TODO promotion
+			if s.board[i][j] == marker {
+				//TODO everything ARGH
+			}
+		}
+
+	}
+	return moves
+}
+func (b squares) movePiece(srcFile int, srcRank int, destFile int, destRank int) squares {
+	p := b[srcFile][srcRank]
+	b[srcFile][srcRank] = '.'
+	b[destFile][destRank] = p
+	return b
 }
 func (s State) kingMoves() []State {
 	moves := make([]State, 8)
