@@ -14,6 +14,7 @@ const (
 type gameState interface {
 	Result() (bool, int) //true if game over, then -1,0,1 for game result
 	Moves() []gameState
+	activePlayer() int //1 if Result=+1 is win for active player, -1 if Result=-1 is win for active player
 }
 
 type gameTree struct {
@@ -123,7 +124,7 @@ func (t *treeNode) selectNode() *treeNode {
 }
 
 func (t *treeNode) uct() float64 {
-	return float64(t.score)/float64(t.sims) + c*math.Sqrt(math.Log(float64(t.parent.sims))/float64(t.sims))
+	return float64(t.data.activePlayer())*float64(t.score)/float64(t.sims) + c*math.Sqrt(math.Log(float64(t.parent.sims))/float64(t.sims))
 }
 
 func (t *treeNode) expand() {
