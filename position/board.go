@@ -106,6 +106,7 @@ func (s State) Moves() (states []State) {
 		}
 	*/
 
+	//this seems super dumb. Better way?
 	states = make([]State, 0)
 	states = append(states, s.pawnMoves()...)
 	states = append(states, s.bishopMoves()...)
@@ -138,18 +139,17 @@ func (s *State) pawnMoves() []State {
 	}
 	return moves
 }
-func (b squares) movePiece(srcFile int, srcRank int, destFile int, destRank int) squares {
-	p := b[srcFile][srcRank]
-	b[srcFile][srcRank] = '.'
-	b[destFile][destRank] = p
-	return b
-}
-func (s State) kingMoves() []State {
-	moves := make([]State, 8)
-
-	return moves
-}
 func (s State) knightMoves() []State {
+	moves := []State{}
+	var marker byte
+	var friendlies string
+	if s.activeColor =="w" {
+		marker = 'N'
+		friendlies = 'KQRBNP'
+	} else {
+		marker = 'n'
+		friendlies = 'kqrbnp'
+	}
 	return nil
 }
 func (s State) queenMoves() []State {
@@ -160,4 +160,16 @@ func (s State) rookMoves() []State {
 }
 func (s State) bishopMoves() []State {
 	return nil
+}
+
+func (b squares) movePiece(srcFile int, srcRank int, destFile int, destRank int) squares {
+	p := b[srcFile][srcRank]
+	b[srcFile][srcRank] = '.'
+	b[destFile][destRank] = p
+	return b
+}
+func (s State) kingMoves() []State {
+	moves := make([]State, 8)
+
+	return moves
 }

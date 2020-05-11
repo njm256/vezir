@@ -10,13 +10,13 @@ const (
 	c = math.Sqrt2 //exploration parameter
 )
 
-//TODO: make sure I'm passing around the info about which player wins for -1/+1 so I can select nodes correctly.
 type gameState interface {
 	Result() (bool, int) //true if game over, then -1,0,1 for game result
 	Moves() []gameState
 	activePlayer() int //1 if Result=+1 is win for active player, -1 if Result=-1 is win for active player
 }
 
+//TODO: store extra info. in the gameTree to handle transpositions
 type gameTree struct {
 	root *treeNode
 }
