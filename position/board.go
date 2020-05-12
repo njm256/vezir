@@ -73,6 +73,7 @@ func (g *Game) move(s State, pawnMoveOrCapture bool) {
 }
 
 func (g Game) iMove(s State, pawnMoveOrCapture bool) Game {
+	//TODO refactor by making a copy instead
 	newGame := Game{}
 	newGame.state = s
 	newGame.prev = make(map[string]int)
@@ -132,7 +133,33 @@ func (s State) pawnMoves(pFile int, pRank int) []State {
 	return nil
 }
 func (s State) knightMoves(pFile int, pRank int) []State {
-	return nil
+	moves := make([]State, 0, 8)
+	var allies string
+	if s.activeColor == "w" {
+		allies = "KQRNBP"
+	} else {
+		allies = "kqrnbp"
+	}
+	offs := [4]int{-2, -1, 1, 2}
+	for i := range offs {
+		for j := range offs {
+			//skip if target square is out of bounds or holds a friendly piece.
+			if i == j || pFile+i < 0 || pFile+i > 7 || pRank+j < 0 || pRank+j > 7 ||
+				strings.IndexByte(allies, s.board[pFile+i][pRank+j]) != -1 {
+				continue
+			}
+			t := s
+			t.board.movePiece(pFile, pRank, pFile+i, pRank+j)
+			t.ep = ""
+			if s.activeColor == "w" {
+				t.activeColor = "b"
+			} else {
+				t.activeColor = "w"
+			}
+			moves = append(moves, t)
+		}
+	}
+	return moves
 }
 func (s State) bishopMoves(pFile int, pRank int) []State {
 	return nil
