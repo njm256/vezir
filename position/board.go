@@ -94,82 +94,61 @@ func (g Game) iMove(s State, pawnMoveOrCapture bool) Game {
 }
 
 func (s State) Moves() (states []State) {
-	/*
-		var activePlayer army
-		var passivePlayer army
-		if g.board.activeColor == "w" {
-			activePlayer = g.board.wPieces
-			passivePlayer = g.board.bPieces
-		} else {
-			activePlayer = g.board.bPieces
-			passivePlayer = g.board.wPieces
-		}
-	*/
-
-	//this seems super dumb. Better way?
-	states = make([]State, 0)
-	states = append(states, s.pawnMoves()...)
-	states = append(states, s.bishopMoves()...)
-	states = append(states, s.knightMoves()...)
-	states = append(states, s.rookMoves()...)
-	states = append(states, s.queenMoves()...)
-	states = append(states, s.kingMoves()...)
-	return
-}
-func (s *State) pawnMoves() []State {
-	moves := []State{}
-	var marker byte
-	var dir int
-	if s.activeColor == "w" {
-		marker = 'P'
-		dir = -1
-	} else {
-		marker = 'p'
-		dir = 1
-	}
+	possibleMoves := make([][]State, 0, 16)
 	for i := 0; i < 8; i++ {
-		for j := 1; j < 7; j++ {
-			//TODO en passant
-			//TODO promotion
-			if s.board[i][j] == marker {
-				//TODO everything ARGH
+		for j := 0; j < 8; j++ {
+			switch {
+			case s.board[i][j] == '.':
+			case s.board[i][j] == 'P' || s.board[i][j] == 'p':
+				possibleMoves = append(possibleMoves, s.pawnMoves(i, j))
+			case s.board[i][j] == 'N' || s.board[i][j] == 'n':
+				possibleMoves = append(possibleMoves, s.knightMoves(i, j))
+			case s.board[i][j] == 'B' || s.board[i][j] == 'b':
+				possibleMoves = append(possibleMoves, s.bishopMoves(i, j))
+			case s.board[i][j] == 'R' || s.board[i][j] == 'r':
+				possibleMoves = append(possibleMoves, s.rookMoves(i, j))
+			case s.board[i][j] == 'Q' || s.board[i][j] == 'q':
+				possibleMoves = append(possibleMoves, s.queenMoves(i, j))
+			case s.board[i][j] == 'K' || s.board[i][j] == 'k':
+				possibleMoves = append(possibleMoves, s.kingMoves(i, j))
+			default:
+				fmt.Println("Wtf.")
+
 			}
 		}
-
+	}
+	sum := 0
+	for _, ml := range possibleMoves {
+		sum += len(ml)
+	}
+	moves := make([]State, 0, sum)
+	for _, ml := range possibleMoves {
+		moves = append(moves, ml...)
 	}
 	return moves
 }
-func (s State) knightMoves() []State {
-	moves := []State{}
-	var marker byte
-	var friendlies string
-	if s.activeColor =="w" {
-		marker = 'N'
-		friendlies = 'KQRBNP'
-	} else {
-		marker = 'n'
-		friendlies = 'kqrbnp'
-	}
-	return nil
-}
-func (s State) queenMoves() []State {
-	return nil
-}
-func (s State) rookMoves() []State {
-	return nil
-}
-func (s State) bishopMoves() []State {
-	return nil
-}
 
+func (s State) pawnMoves(pFile int, pRank int) []State {
+	return nil
+}
+func (s State) knightMoves(pFile int, pRank int) []State {
+	return nil
+}
+func (s State) bishopMoves(pFile int, pRank int) []State {
+	return nil
+}
+func (s State) rookMoves(pFile int, pRank int) []State {
+	return nil
+}
+func (s State) queenMoves(pFile int, pRank int) []State {
+	return nil
+}
+func (s State) kingMoves(pFile int, pRank int) []State {
+	return nil
+}
 func (b squares) movePiece(srcFile int, srcRank int, destFile int, destRank int) squares {
 	p := b[srcFile][srcRank]
 	b[srcFile][srcRank] = '.'
 	b[destFile][destRank] = p
 	return b
-}
-func (s State) kingMoves() []State {
-	moves := make([]State, 8)
-
-	return moves
 }
