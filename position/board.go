@@ -130,7 +130,22 @@ func (s State) Moves() (states []State) {
 }
 
 func (s State) pawnMoves(pFile int, pRank int) []State {
-	return nil
+	moves := make([]State, 0, 12)
+	var allies string
+	var enemies string
+	var dir int
+	if s.activeColor == "w" {
+		allies = "KQRNBP"
+		enemies = "kqrnbp"
+		dir = -1
+	} else {
+		allies = "kqrnbp"
+		enemies = "KQRNBP"
+		dir = 1
+	}
+	//TODO everything argh
+	//have to handle first move, en passant, and promotion
+	return moves
 }
 func (s State) knightMoves(pFile int, pRank int) []State {
 	moves := make([]State, 0, 8)
@@ -149,7 +164,7 @@ func (s State) knightMoves(pFile int, pRank int) []State {
 				continue
 			}
 			t := s
-			t.board.movePiece(pFile, pRank, pFile+i, pRank+j)
+			t.board = t.board.movePiece(pFile, pRank, pFile+i, pRank+j)
 			t.ep = ""
 			if s.activeColor == "w" {
 				t.activeColor = "b"
@@ -161,18 +176,116 @@ func (s State) knightMoves(pFile int, pRank int) []State {
 	}
 	return moves
 }
+
 func (s State) bishopMoves(pFile int, pRank int) []State {
-	return nil
+	moves := make([]State, 0, 13)
+	var allies string
+	if s.activeColor == "w" {
+		allies = "KQRNBP"
+	} else {
+		allies = "kqrnbp"
+	}
+	//TODO get rid of these dumb ranges and loop like a normal human being.
+	for i := range [2]int{-1, 1} {
+		for j := range [2]int{-1, 1} {
+			for k := 1; k < 8; k++ {
+				fOff := i * k
+				rOff := j * k
+				if pFile+fOff < 0 || pFile+fOff > 7 || pRank+rOff < 0 || pRank+rOff > 7 ||
+					strings.IndexByte(allies, s.board[pFile+fOff][pRank+rOff]) != -1 {
+					break
+				}
+				t := s
+				t.board = t.board.movePiece(pFile, pRank, pFile+fOff, pRank+rOff)
+				t.ep = ""
+				if s.activeColor == "w" {
+					t.activeColor = "b"
+				} else {
+					t.activeColor = "w"
+				}
+				moves = append(moves, t)
+			}
+		}
+	}
+	return moves
 }
+
 func (s State) rookMoves(pFile int, pRank int) []State {
-	return nil
+	moves := make([]State, 0, 14)
+	var allies string
+	if s.activeColor == "w" {
+		allies = "KQRNBP"
+	} else {
+		allies = "kqrnbp"
+	}
+	//this is probably too clever for my own good.
+	for card := range [2]int{0, 1} {
+		for dir := range [2]int{-1, 1} {
+			for i := 1; i < 8; i++ {
+				fOff := (1 - card) * dir * i
+				rOff := card * dir * i
+				//exactly one is non-zero
+				if pFile+fOff < 0 || pFile+fOff > 7 || pRank+rOff < 0 || pRank+rOff > 7 ||
+					strings.IndexByte(allies, s.board[pFile+fOff][pRank+rOff]) != -1 {
+					break
+				}
+				t := s
+				t.board = t.board.movePiece(pFile, pRank, pFile+fOff, pRank+rOff)
+				t.ep = ""
+				if s.activeColor == "w" {
+					t.activeColor = "b"
+					if pRank == 7 && (pFile == 0 || pFile == 7) {
+						t.castling = strings.Trim(s.castling, "KQ")
+					}
+				} else {
+					t.activeColor = "w"
+					if pRank == 0 && (pFile == 0 || pFile == 7) {
+						t.castling = strings.Trim(s.castling, "kq")
+					}
+				}
+				moves = append(moves, t)
+			}
+		}
+	}
+	return moves
 }
+
 func (s State) queenMoves(pFile int, pRank int) []State {
-	return nil
+	return append(s.bishopMoves(pFile, pRank), s.rookMoves(pFile, pRank)...)
 }
+
 func (s State) kingMoves(pFile int, pRank int) []State {
-	return nil
+	moves := make([]State, 0, 14)
+	var allies string
+	if s.activeColor == "w" {
+		allies = "KQRNBP"
+	} else {
+		allies = "kqrnbp"
+	}
+	//TODO add castling
+	for i := -1; i < 2; i++ {
+		for j := -1; j < 2; j++ {
+			if i == j || pFile+i < 0 || pFile+i > 7 || pRank+j < 0 || pRank+j > 7 ||
+				strings.IndexByte(allies, s.board[pFile+i][pRank+j]) != -1 {
+				break
+			}
+
+			t := s
+			t.board = t.board.movePiece(pFile, pRank, pFile+i, pRank+j)
+			t.ep = ""
+			if s.activeColor == "w" {
+				t.activeColor = "b"
+				t.castling = strings.Trim(s.castling, "KQ")
+			} else {
+				t.activeColor = "w"
+				t.castling = strings.Trim(s.castling, "kq")
+			}
+			moves = append(moves, t)
+		}
+	}
+	return moves
 }
+
 func (b squares) movePiece(srcFile int, srcRank int, destFile int, destRank int) squares {
 	p := b[srcFile][srcRank]
 	b[srcFile][srcRank] = '.'
