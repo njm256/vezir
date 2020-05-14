@@ -1,5 +1,7 @@
 package position
 
+//TODO OMG I just realized my board indices are all wrong. Damnit.
+
 import (
 	"fmt"
 	"strings"
@@ -133,18 +135,76 @@ func (s State) pawnMoves(pFile int, pRank int) []State {
 	moves := make([]State, 0, 12)
 	var allies string
 	var enemies string
-	var dir int
+	var dir int         //up (-1) or down (+1) the board
+	var sRank int       //starting rank of a pawn
+	var promoteRank int //rank at which promotions must be handled
 	if s.activeColor == "w" {
 		allies = "KQRNBP"
 		enemies = "kqrnbp"
 		dir = -1
+		sRank = 6
+		promoteRank = 1
+
 	} else {
 		allies = "kqrnbp"
 		enemies = "KQRNBP"
 		dir = 1
+		sRank = 1
+		promoteRank = 6
 	}
-	//TODO everything argh
-	//have to handle first move, en passant, and promotion
+	//have to handle regular moves, captures, first move, en passant, and promotion
+
+	//promotion
+	if pRank == promoteRank {
+		//TODO this nightmare.
+		//return here, or call out to a different function.
+		return moves
+	}
+	//captures
+	for i := -1; i < 2; i += 2 {
+		if pFile+i < 0 || pFile+i > 7 {
+			continue
+		}
+		if strings.IndexByte(enemies, s.board[pFile+dir][pRank+i]) != -1 {
+			t := s
+			t.board = s.board.movePiece(pFile, pRank, pFile+dir, pRank+i)
+			if s.activeColor == "w" {
+				t.activeColor = "b"
+			} else {
+				t.activeColor = "w"
+			}
+			t.ep = ""
+			//TODO edit castling
+			moves = append(moves, t)
+		}
+	}
+	//regular move
+	if strings.IndexByte(allies, s.board[pFile+dir][pRank]) == -1 &&
+		strings.IndexByte(enemies, s.board[pFile+dir][pRank]) == -1 {
+		t := s
+		t.board = s.board.movePiece(pFile, pRank, pFile+dir, pRank)
+		if s.activeColor == "w" {
+			t.activeColor = "b"
+		} else {
+			t.activeColor = "w"
+		}
+		t.ep = ""
+		moves = append(moves, t)
+		//starting move
+		if pRank == sRank && strings.IndexByte(allies, s.board[pFile+dir*2][pRank]) == -1 &&
+			strings.IndexByte(enemies, s.board[pFile+dir*2][pRank]) == -1 {
+			t := s
+			t.board = s.board.movePiece(pFile, pRank, pFile+dir*2, pRank)
+			if s.activeColor == "w" {
+				t.activeColor = "b"
+			} else {
+				t.activeColor = "w"
+			}
+			moves = append(moves, t)
+			//TODO add ep for this case
+		}
+	}
+
 	return moves
 }
 func (s State) knightMoves(pFile int, pRank int) []State {
