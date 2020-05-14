@@ -1,7 +1,5 @@
 package position
 
-//TODO OMG I just realized my board indices are all wrong. Damnit.
-
 import (
 	"fmt"
 	"strings"
@@ -131,7 +129,7 @@ func (s State) Moves() (states []State) {
 	return moves
 }
 
-func (s State) pawnMoves(pFile int, pRank int) []State {
+func (s State) pawnMoves(pRank int, pFile int) []State {
 	moves := make([]State, 0, 12)
 	var allies string
 	var enemies string
@@ -165,9 +163,9 @@ func (s State) pawnMoves(pFile int, pRank int) []State {
 		if pFile+i < 0 || pFile+i > 7 {
 			continue
 		}
-		if strings.IndexByte(enemies, s.board[pFile+dir][pRank+i]) != -1 {
+		if strings.IndexByte(enemies, s.board[pRank+dir][pFile+i]) != -1 {
 			t := s
-			t.board = s.board.movePiece(pFile, pRank, pFile+dir, pRank+i)
+			t.board = s.board.movePiece(pRank, pFile, pRank+dir, pFile+i)
 			if s.activeColor == "w" {
 				t.activeColor = "b"
 			} else {
@@ -191,10 +189,10 @@ func (s State) pawnMoves(pFile int, pRank int) []State {
 		t.ep = ""
 		moves = append(moves, t)
 		//starting move
-		if pRank == sRank && strings.IndexByte(allies, s.board[pFile+dir*2][pRank]) == -1 &&
-			strings.IndexByte(enemies, s.board[pFile+dir*2][pRank]) == -1 {
+		if pRank == sRank && strings.IndexByte(allies, s.board[pRank+dir*2][pFile]) == -1 &&
+			strings.IndexByte(enemies, s.board[pRank+dir*2][pFile]) == -1 {
 			t := s
-			t.board = s.board.movePiece(pFile, pRank, pFile+dir*2, pRank)
+			t.board = s.board.movePiece(pRank, pFile, pRank+dir*2, pFile)
 			if s.activeColor == "w" {
 				t.activeColor = "b"
 			} else {
@@ -207,7 +205,7 @@ func (s State) pawnMoves(pFile int, pRank int) []State {
 
 	return moves
 }
-func (s State) knightMoves(pFile int, pRank int) []State {
+func (s State) knightMoves(pRank int, pFile int) []State {
 	moves := make([]State, 0, 8)
 	var allies string
 	if s.activeColor == "w" {
@@ -220,11 +218,11 @@ func (s State) knightMoves(pFile int, pRank int) []State {
 		for j := range offs {
 			//skip if target square is out of bounds or holds a friendly piece.
 			if i == j || pFile+i < 0 || pFile+i > 7 || pRank+j < 0 || pRank+j > 7 ||
-				strings.IndexByte(allies, s.board[pFile+i][pRank+j]) != -1 {
+				strings.IndexByte(allies, s.board[pRank+i][pFile+j]) != -1 {
 				continue
 			}
 			t := s
-			t.board = t.board.movePiece(pFile, pRank, pFile+i, pRank+j)
+			t.board = t.board.movePiece(pRank, pFile, pRank+i, pFile+j)
 			t.ep = ""
 			if s.activeColor == "w" {
 				t.activeColor = "b"
@@ -237,7 +235,7 @@ func (s State) knightMoves(pFile int, pRank int) []State {
 	return moves
 }
 
-func (s State) bishopMoves(pFile int, pRank int) []State {
+func (s State) bishopMoves(pRank int, pFile int) []State {
 	moves := make([]State, 0, 13)
 	var allies string
 	if s.activeColor == "w" {
@@ -252,11 +250,11 @@ func (s State) bishopMoves(pFile int, pRank int) []State {
 				fOff := i * k
 				rOff := j * k
 				if pFile+fOff < 0 || pFile+fOff > 7 || pRank+rOff < 0 || pRank+rOff > 7 ||
-					strings.IndexByte(allies, s.board[pFile+fOff][pRank+rOff]) != -1 {
+					strings.IndexByte(allies, s.board[pRank+rOff][pFile+fOff]) != -1 {
 					break
 				}
 				t := s
-				t.board = t.board.movePiece(pFile, pRank, pFile+fOff, pRank+rOff)
+				t.board = t.board.movePiece(pRank, pFile, pRank+rOff, pFile+fOff)
 				t.ep = ""
 				if s.activeColor == "w" {
 					t.activeColor = "b"
@@ -270,7 +268,7 @@ func (s State) bishopMoves(pFile int, pRank int) []State {
 	return moves
 }
 
-func (s State) rookMoves(pFile int, pRank int) []State {
+func (s State) rookMoves(pRank int, pFile int) []State {
 	moves := make([]State, 0, 14)
 	var allies string
 	if s.activeColor == "w" {
@@ -282,15 +280,15 @@ func (s State) rookMoves(pFile int, pRank int) []State {
 	for card := range [2]int{0, 1} {
 		for dir := range [2]int{-1, 1} {
 			for i := 1; i < 8; i++ {
-				fOff := (1 - card) * dir * i
-				rOff := card * dir * i
+				rOff := (1 - card) * dir * i
+				fOff := card * dir * i
 				//exactly one is non-zero
 				if pFile+fOff < 0 || pFile+fOff > 7 || pRank+rOff < 0 || pRank+rOff > 7 ||
-					strings.IndexByte(allies, s.board[pFile+fOff][pRank+rOff]) != -1 {
+					strings.IndexByte(allies, s.board[pRank+rOff][pFile+fOff]) != -1 {
 					break
 				}
 				t := s
-				t.board = t.board.movePiece(pFile, pRank, pFile+fOff, pRank+rOff)
+				t.board = t.board.movePiece(pRank, pFile, pRank+rOff, pFile+fOff)
 				t.ep = ""
 				if s.activeColor == "w" {
 					t.activeColor = "b"
@@ -310,11 +308,11 @@ func (s State) rookMoves(pFile int, pRank int) []State {
 	return moves
 }
 
-func (s State) queenMoves(pFile int, pRank int) []State {
-	return append(s.bishopMoves(pFile, pRank), s.rookMoves(pFile, pRank)...)
+func (s State) queenMoves(pRank int, pFile int) []State {
+	return append(s.bishopMoves(pRank, pFile), s.rookMoves(pRank, pFile)...)
 }
 
-func (s State) kingMoves(pFile int, pRank int) []State {
+func (s State) kingMoves(pRank int, pFile int) []State {
 	moves := make([]State, 0, 14)
 	var allies string
 	if s.activeColor == "w" {
@@ -331,7 +329,7 @@ func (s State) kingMoves(pFile int, pRank int) []State {
 			}
 
 			t := s
-			t.board = t.board.movePiece(pFile, pRank, pFile+i, pRank+j)
+			t.board = t.board.movePiece(pRank, pFile, pRank+i, pFile+j)
 			t.ep = ""
 			if s.activeColor == "w" {
 				t.activeColor = "b"
@@ -346,9 +344,9 @@ func (s State) kingMoves(pFile int, pRank int) []State {
 	return moves
 }
 
-func (b squares) movePiece(srcFile int, srcRank int, destFile int, destRank int) squares {
-	p := b[srcFile][srcRank]
-	b[srcFile][srcRank] = '.'
-	b[destFile][destRank] = p
+func (b squares) movePiece(srcRank int, srcFile int, destRank int, destFile int) squares {
+	p := b[srcRank][srcFile]
+	b[srcRank][srcFile] = '.'
+	b[destRank][destFile] = p
 	return b
 }
