@@ -7,11 +7,29 @@ import (
 
 type squares [8][8]byte
 
+var startBoard = [8][8]byte{
+	[8]byte{'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'},
+	[8]byte{'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'},
+	[8]byte{'.', '.', '.', '.', '.', '.', '.', '.'},
+	[8]byte{'.', '.', '.', '.', '.', '.', '.', '.'},
+	[8]byte{'.', '.', '.', '.', '.', '.', '.', '.'},
+	[8]byte{'.', '.', '.', '.', '.', '.', '.', '.'},
+	[8]byte{'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'},
+	[8]byte{'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'},
+}
+
 type State struct {
 	board       squares
 	activeColor string
 	castling    string
 	ep          string
+}
+
+var startState = State{
+	board:       startBoard,
+	activeColor: "w",
+	castling:    "KQkq",
+	ep:          "",
 }
 
 type Game struct {
@@ -21,11 +39,24 @@ type Game struct {
 	prev   map[string]int // maybe map[State]int? seems better to hash the states
 }
 
-func (g *Game) hashCode() string {
+func NewGame(startPos ...State) (g Game) {
+	g = Game{}
+	g.hclock = 0
+	g.moveNo = 0
+	g.prev = make(map[string]int)
+	if len(startPos) > 0 {
+		g.state = startPos[0]
+	} else {
+		g.state = startState
+	}
+	return
+}
+
+func (g Game) hashCode() string {
 	return GameToFen(g).String()
 }
 
-func GameToFen(s *Game) *Fen {
+func GameToFen(s Game) Fen {
 	//TODO this
 	counter := 0
 	var str strings.Builder
@@ -47,7 +78,7 @@ func GameToFen(s *Game) *Fen {
 			str.WriteString("/")
 		}
 	}
-	return &Fen{
+	return Fen{
 		pos:         str.String(),
 		activeColor: s.state.activeColor,
 		castling:    s.state.castling,
@@ -69,12 +100,12 @@ func (g *Game) move(s State, pawnMoveOrCapture bool) {
 	} else {
 		g.hclock++
 	}
-	//TODO put something here
+	//TODO put something here -- what was I supposed to put here?
 }
 
 func (g Game) iMove(s State, pawnMoveOrCapture bool) Game {
-	//TODO refactor by making a copy instead
-	newGame := Game{}
+	//??TODO refactor by making a copy instead
+	newGame := g
 	newGame.state = s
 	newGame.prev = make(map[string]int)
 	for k, v := range g.prev {

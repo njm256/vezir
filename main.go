@@ -2,12 +2,15 @@ package main
 
 import (
 	"fmt"
-	"os"
+	//"os"
 
 	"github.com/njm256/vezir/position"
 )
 
 func main() {
-	a := position.NewFen(os.Args[1])
-	fmt.Println(a)
+
+	//a := position.NewFen(os.Args[1])
+	//fmt.Println(a)
+	g := position.NewGame()
+	fmt.Println(position.GameToFen(g).String())
 }
