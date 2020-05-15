@@ -381,3 +381,32 @@ func (b squares) movePiece(srcRank int, srcFile int, destRank int, destFile int)
 	b[destRank][destFile] = p
 	return b
 }
+
+func (g *Game) Result() (bool, int) { //return true if game over, and -1/0/1 for result
+	if g.hclock > 50 { //50 move rule
+		return true, 0
+	}
+	if g.prev[g.hashCode()] == 2 { //3-fold rep
+		return true, 0
+	}
+	var wKing bool
+	var bKing bool
+	for i := 0; i < 8; i++ {
+		for j := 0; j < 8; j++ {
+			if g.state.board[i][j] == 'K' {
+				wKing = true
+			} else if g.state.board[i][j] == 'k' {
+				bKing = true
+			}
+		}
+	}
+	if !wKing {
+		return true, -1
+	} else if !bKing {
+		return true, 1
+	}
+	if len(g.state.Moves()) == 0 {
+		return true, 0
+	}
+	return false, 0
+}
