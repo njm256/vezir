@@ -10,10 +10,10 @@ const (
 	c = math.Sqrt2 //exploration parameter
 )
 
-type gameState interface {
+type GameState interface {
 	Result() (bool, int) //true if game over, then -1,0,1 for game result
-	Moves() []gameState
-	activePlayer() int //1 if Result=+1 is win for active player, -1 if Result=-1 is win for active player
+	Moves() []GameState
+	ActivePlayer() int //1 if Result=+1 is win for active player, -1 if Result=-1 is win for active player
 }
 
 //TODO: store extra info. in the gameTree to handle transpositions
@@ -22,7 +22,7 @@ type gameTree struct {
 }
 
 type treeNode struct {
-	data     gameState
+	data     GameState
 	parent   *treeNode
 	children []treeNode
 	expanded bool
@@ -30,7 +30,7 @@ type treeNode struct {
 	sims     int
 }
 
-func MCTS(g *gameState, iter int) *gameState {
+func MCTS(g *GameState, iter int) *GameState {
 	tree := gameTree{
 		root: &treeNode{
 			data:     *g,
@@ -55,7 +55,7 @@ func MCTS(g *gameState, iter int) *gameState {
 	return &best.data
 }
 
-func MCTSLoop(g *gameState) {
+func MCTSLoop(g *GameState) {
 	tree := gameTree{
 		root: &treeNode{
 			data:     *g,
@@ -124,7 +124,7 @@ func (t *treeNode) selectNode() *treeNode {
 }
 
 func (t *treeNode) uct() float64 {
-	return float64(t.data.activePlayer())*float64(t.score)/float64(t.sims) + c*math.Sqrt(math.Log(float64(t.parent.sims))/float64(t.sims))
+	return float64(t.data.ActivePlayer())*float64(t.score)/float64(t.sims) + c*math.Sqrt(math.Log(float64(t.parent.sims))/float64(t.sims))
 }
 
 func (t *treeNode) expand() {

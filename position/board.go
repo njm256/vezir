@@ -2,6 +2,7 @@ package position
 
 import (
 	"fmt"
+	"github.com/njm256/vezir/engine"
 	"strings"
 )
 
@@ -127,6 +128,14 @@ func (g Game) IMove(s State) Game {
 	return newGame
 }
 
+func (g Game) Moves() []engine.GameState {
+	nextStates := g.state.Moves()
+	games := make([]engine.GameState, 0, len(nextStates))
+	for _, s := range nextStates {
+		games = append(games, g.IMove(s))
+	}
+	return games
+}
 func (s State) Moves() (states []State) {
 	possibleMoves := make([][]State, 0, 16)
 	for i := 0; i < 8; i++ {
@@ -393,7 +402,7 @@ func (b squares) movePiece(srcRank int, srcFile int, destRank int, destFile int)
 	return b
 }
 
-func (g *Game) Result() (bool, int) { //return true if game over, and -1/0/1 for result
+func (g Game) Result() (bool, int) { //return true if game over, and -1/0/1 for result
 	if g.hclock > 50 { //50 move rule
 		return true, 0
 	}
@@ -420,4 +429,12 @@ func (g *Game) Result() (bool, int) { //return true if game over, and -1/0/1 for
 		return true, 0
 	}
 	return false, 0
+}
+
+func (g Game) ActivePlayer() int {
+	if g.state.activeColor == "w" {
+		return 1
+	} else {
+		return -1
+	}
 }

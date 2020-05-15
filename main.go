@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
 	//"os"
 
+	"github.com/njm256/vezir/engine"
 	"github.com/njm256/vezir/position"
 )
 
@@ -11,6 +11,7 @@ func main() {
 
 	//a := position.NewFen(os.Args[1])
 	//fmt.Println(a)
-	g := position.NewGame()
-	fmt.Println(position.GameToFen(g).String())
+	var g engine.GameState
+	g = position.NewGame()
+	engine.MCTSLoop(&g)
 }
