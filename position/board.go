@@ -19,17 +19,19 @@ var startBoard = [8][8]byte{
 }
 
 type State struct {
-	board       squares
-	activeColor string
-	castling    string
-	ep          string
+	board          squares
+	activeColor    string
+	castling       string
+	ep             string
+	pMoveOrCapture bool
 }
 
 var startState = State{
-	board:       startBoard,
-	activeColor: "w",
-	castling:    "KQkq",
-	ep:          "",
+	board:          startBoard,
+	activeColor:    "w",
+	castling:       "KQkq",
+	ep:             "",
+	pMoveOrCapture: false,
 }
 
 type Game struct {
@@ -88,14 +90,14 @@ func GameToFen(s Game) Fen {
 	}
 }
 
-func (g *Game) move(s State, pawnMoveOrCapture bool) {
+func (g *Game) move(s State) {
 	h := g.hashCode()
 	g.prev[h] = g.prev[h] + 1
 	g.state = s
 	if s.activeColor == "w" {
 		g.moveNo++
 	}
-	if pawnMoveOrCapture {
+	if s.pMoveOrCapture {
 		g.hclock = 0
 	} else {
 		g.hclock++
@@ -103,7 +105,7 @@ func (g *Game) move(s State, pawnMoveOrCapture bool) {
 	//TODO put something here -- what was I supposed to put here?
 }
 
-func (g Game) iMove(s State, pawnMoveOrCapture bool) Game {
+func (g Game) IMove(s State) Game {
 	//??TODO refactor by making a copy instead
 	newGame := g
 	newGame.state = s
@@ -116,7 +118,7 @@ func (g Game) iMove(s State, pawnMoveOrCapture bool) Game {
 	if s.activeColor == "w" {
 		newGame.moveNo = g.moveNo + 1
 	}
-	if pawnMoveOrCapture {
+	if s.pMoveOrCapture {
 		newGame.hclock = 0
 	} else {
 		newGame.hclock = g.hclock + 1
@@ -203,6 +205,7 @@ func (s State) pawnMoves(pRank int, pFile int) []State {
 				t.activeColor = "w"
 			}
 			t.ep = ""
+			t.pMoveOrCapture = true
 			//TODO edit castling
 			moves = append(moves, t)
 		}
@@ -218,6 +221,7 @@ func (s State) pawnMoves(pRank int, pFile int) []State {
 			t.activeColor = "w"
 		}
 		t.ep = ""
+		t.pMoveOrCapture = true
 		moves = append(moves, t)
 		//starting move
 		if pRank == sRank && strings.IndexByte(allies, s.board[pRank+dir*2][pFile]) == -1 &&
@@ -229,6 +233,7 @@ func (s State) pawnMoves(pRank int, pFile int) []State {
 			} else {
 				t.activeColor = "w"
 			}
+			t.pMoveOrCapture = true
 			moves = append(moves, t)
 			//TODO add ep for this case
 		}
@@ -260,6 +265,7 @@ func (s State) knightMoves(pRank int, pFile int) []State {
 			} else {
 				t.activeColor = "w"
 			}
+			t.pMoveOrCapture = false
 			moves = append(moves, t)
 		}
 	}
@@ -292,6 +298,8 @@ func (s State) bishopMoves(pRank int, pFile int) []State {
 				} else {
 					t.activeColor = "w"
 				}
+				//TODO check for capture
+				t.pMoveOrCapture = false
 				moves = append(moves, t)
 			}
 		}
@@ -332,6 +340,8 @@ func (s State) rookMoves(pRank int, pFile int) []State {
 						t.castling = strings.Trim(s.castling, "kq")
 					}
 				}
+				//TODO check for capture
+				t.pMoveOrCapture = false
 				moves = append(moves, t)
 			}
 		}
@@ -369,6 +379,7 @@ func (s State) kingMoves(pRank int, pFile int) []State {
 				t.activeColor = "w"
 				t.castling = strings.Trim(s.castling, "kq")
 			}
+			t.pMoveOrCapture = false
 			moves = append(moves, t)
 		}
 	}
