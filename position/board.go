@@ -220,10 +220,10 @@ func (s State) pawnMoves(pRank int, pFile int) []State {
 		}
 	}
 	//regular move
-	if strings.IndexByte(allies, s.board[pFile+dir][pRank]) == -1 &&
-		strings.IndexByte(enemies, s.board[pFile+dir][pRank]) == -1 {
+	if strings.IndexByte(allies, s.board[pRank+dir][pFile]) == -1 &&
+		strings.IndexByte(enemies, s.board[pRank+dir][pFile]) == -1 {
 		t := s
-		t.board = s.board.movePiece(pFile, pRank, pFile+dir, pRank)
+		t.board = s.board.movePiece(pRank, pFile, pRank+dir, pFile)
 		if s.activeColor == "w" {
 			t.activeColor = "b"
 		} else {
@@ -259,10 +259,10 @@ func (s State) knightMoves(pRank int, pFile int) []State {
 		allies = "kqrnbp"
 	}
 	offs := [4]int{-2, -1, 1, 2}
-	for i := range offs {
-		for j := range offs {
+	for _, i := range offs {
+		for _, j := range offs {
 			//skip if target square is out of bounds or holds a friendly piece.
-			if i == j || pFile+i < 0 || pFile+i > 7 || pRank+j < 0 || pRank+j > 7 ||
+			if i == j || pFile+j < 0 || pFile+j > 7 || pRank+i < 0 || pRank+i > 7 ||
 				strings.IndexByte(allies, s.board[pRank+i][pFile+j]) != -1 {
 				continue
 			}
@@ -290,8 +290,8 @@ func (s State) bishopMoves(pRank int, pFile int) []State {
 		allies = "kqrnbp"
 	}
 	//TODO get rid of these dumb ranges and loop like a normal human being.
-	for i := range [2]int{-1, 1} {
-		for j := range [2]int{-1, 1} {
+	for _, i := range [2]int{-1, 1} {
+		for _, j := range [2]int{-1, 1} {
 			for k := 1; k < 8; k++ {
 				fOff := i * k
 				rOff := j * k
@@ -325,8 +325,8 @@ func (s State) rookMoves(pRank int, pFile int) []State {
 		allies = "kqrnbp"
 	}
 	//this is probably too clever for my own good.
-	for card := range [2]int{0, 1} {
-		for dir := range [2]int{-1, 1} {
+	for _, card := range [2]int{0, 1} {
+		for _, dir := range [2]int{-1, 1} {
 			for i := 1; i < 8; i++ {
 				rOff := (1 - card) * dir * i
 				fOff := card * dir * i
@@ -373,8 +373,8 @@ func (s State) kingMoves(pRank int, pFile int) []State {
 	//TODO add castling
 	for i := -1; i < 2; i++ {
 		for j := -1; j < 2; j++ {
-			if i == j || pFile+i < 0 || pFile+i > 7 || pRank+j < 0 || pRank+j > 7 ||
-				strings.IndexByte(allies, s.board[pFile+i][pRank+j]) != -1 {
+			if i == j || pRank+i < 0 || pRank+i > 7 || pFile+j < 0 || pFile+j > 7 ||
+				strings.IndexByte(allies, s.board[pRank+i][pFile+j]) != -1 {
 				break
 			}
 

@@ -71,13 +71,24 @@ func MCTSLoop(g *GameState) {
 		v := nextNode.rollout()
 		nextNode.backPropagate(v)
 
+		//TODO why did I think this would work?
+		if !tree.root.expanded {
+			tree.root.expand()
+		}
 		best := &tree.root.children[0]
+
 		for _, v := range tree.root.children {
+			if best.sims == 0 {
+				break
+			}
+			if v.sims == 0 {
+				continue
+			}
 			if float64(v.score)/float64(v.sims) > float64(best.score)/float64(best.sims) {
 				best = &v
 			}
 		}
-		fmt.Println(best.data)
+		//fmt.Println(best.data)
 		fmt.Printf("score: %d, sims: %d", best.score, best.sims)
 	}
 }
