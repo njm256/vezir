@@ -17,3 +17,6 @@
 
 main
 vezir
+*.old
+tic/*
+TODO.txt
