@@ -25,6 +25,7 @@ type State struct {
 	castling       string
 	ep             string
 	pMoveOrCapture bool
+	Move           string
 }
 
 var startState = State{
@@ -33,6 +34,7 @@ var startState = State{
 	castling:       "KQkq",
 	ep:             "",
 	pMoveOrCapture: false,
+	Move:           "",
 }
 
 type Game struct {
@@ -55,10 +57,44 @@ func NewGame(startPos ...State) (g Game) {
 	return
 }
 
+func (s State) hashCode() string {
+	return StateToFen(s).String()
+}
+
+func StateToFen(s State) Fen {
+	counter := 0
+	var str strings.Builder
+	for i := 0; i < 8; i++ {
+		for j := 0; j < 8; j++ {
+			if s.board[i][j] == '.' {
+				counter++
+			} else if counter > 0 {
+				fmt.Fprintf(&str, "%d", counter)
+				counter = 0
+			}
+			fmt.Fprintf(&str, "%c", s.board[i][j])
+		}
+		if counter > 0 {
+			fmt.Fprintf(&str, "%d", counter)
+			counter = 0
+		}
+		if i != 7 {
+			str.WriteString("/")
+		}
+	}
+	return Fen{
+		pos:         str.String(),
+		activeColor: s.activeColor,
+		castling:    s.castling,
+		ep:          s.ep,
+	}
+}
+
 func (g Game) hashCode() string {
 	return GameToFen(g).String()
 }
 
+//TODO why is this on Game?
 func GameToFen(s Game) Fen {
 	//TODO this
 	counter := 0
@@ -208,6 +244,7 @@ func (s State) pawnMoves(pRank int, pFile int) []State {
 		if strings.IndexByte(enemies, s.board[pRank+dir][pFile+i]) != -1 {
 			t := s
 			t.board = s.board.movePiece(pRank, pFile, pRank+dir, pFile+i)
+			t.Move = fmt.Sprintf("%d%d%d%d", pRank, pFile, pRank+dir, pFile+i)
 			if s.activeColor == "w" {
 				t.activeColor = "b"
 			} else {
@@ -224,6 +261,7 @@ func (s State) pawnMoves(pRank int, pFile int) []State {
 		strings.IndexByte(enemies, s.board[pRank+dir][pFile]) == -1 {
 		t := s
 		t.board = s.board.movePiece(pRank, pFile, pRank+dir, pFile)
+		t.Move = fmt.Sprintf("%d%d%d%d", pRank, pFile, pRank+dir, pFile)
 		if s.activeColor == "w" {
 			t.activeColor = "b"
 		} else {
@@ -237,6 +275,7 @@ func (s State) pawnMoves(pRank int, pFile int) []State {
 			strings.IndexByte(enemies, s.board[pRank+dir*2][pFile]) == -1 {
 			t := s
 			t.board = s.board.movePiece(pRank, pFile, pRank+dir*2, pFile)
+			t.Move = fmt.Sprintf("%d%d%d%d", pRank, pFile, pRank+dir*2, pFile)
 			if s.activeColor == "w" {
 				t.activeColor = "b"
 			} else {
@@ -268,6 +307,7 @@ func (s State) knightMoves(pRank int, pFile int) []State {
 			}
 			t := s
 			t.board = t.board.movePiece(pRank, pFile, pRank+i, pFile+j)
+			t.Move = fmt.Sprintf("%d%d%d%d", pRank, pFile, pRank+i, pFile+j)
 			t.ep = ""
 			if s.activeColor == "w" {
 				t.activeColor = "b"
@@ -301,6 +341,7 @@ func (s State) bishopMoves(pRank int, pFile int) []State {
 				}
 				t := s
 				t.board = t.board.movePiece(pRank, pFile, pRank+rOff, pFile+fOff)
+				t.Move = fmt.Sprintf("%d%d%d%d", pRank, pFile, pRank+rOff, pFile+fOff)
 				t.ep = ""
 				if s.activeColor == "w" {
 					t.activeColor = "b"
@@ -337,6 +378,7 @@ func (s State) rookMoves(pRank int, pFile int) []State {
 				}
 				t := s
 				t.board = t.board.movePiece(pRank, pFile, pRank+rOff, pFile+fOff)
+				t.Move = fmt.Sprintf("%d%d%d%d", pRank, pFile, pRank+rOff, pFile+fOff)
 				t.ep = ""
 				if s.activeColor == "w" {
 					t.activeColor = "b"
@@ -380,6 +422,7 @@ func (s State) kingMoves(pRank int, pFile int) []State {
 
 			t := s
 			t.board = t.board.movePiece(pRank, pFile, pRank+i, pFile+j)
+			t.Move = fmt.Sprintf("%d%d%d%d", pRank, pFile, pRank+i, pFile+j)
 			t.ep = ""
 			if s.activeColor == "w" {
 				t.activeColor = "b"

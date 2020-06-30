@@ -16,8 +16,8 @@ type GameState interface {
 	ActivePlayer() int //1 if Result=+1 is win for active player, -1 if Result=-1 is win for active player
 }
 
-//TODO: store extra info. in the gameTree to handle transpositions
-type gameTree struct {
+//TODO: store extra info. in the GameTree to handle transpositions
+type GameTree struct {
 	root *treeNode
 }
 
@@ -26,14 +26,20 @@ type treeNode struct {
 	parent   *treeNode
 	children []treeNode
 	expanded bool
-	score    int
+	score    int //TODO keep track of wins vs draws
 	sims     int
 }
 
-func MCTS(g *GameState, iter int) *GameState {
-	tree := gameTree{
+func (t *GameTree) MCTSIter() {
+	nextNode := t.root.selectNode()
+	v := nextNode.rollout()
+	nextNode.backPropagate(v)
+}
+
+func MCTS(g GameState, iter int) GameState {
+	tree := GameTree{
 		root: &treeNode{
-			data:     *g,
+			data:     g,
 			parent:   nil,
 			children: []treeNode{},
 			expanded: false,
@@ -42,9 +48,7 @@ func MCTS(g *GameState, iter int) *GameState {
 		},
 	}
 	for i := 0; i < iter; i++ {
-		nextNode := tree.root.selectNode()
-		v := nextNode.rollout()
-		nextNode.backPropagate(v)
+		tree.MCTSIter()
 	}
 	best := &tree.root.children[0]
 	for _, v := range tree.root.children {
@@ -52,13 +56,13 @@ func MCTS(g *GameState, iter int) *GameState {
 			best = &v
 		}
 	}
-	return &best.data
+	return best.data
 }
 
-func MCTSLoop(g *GameState) {
-	tree := gameTree{
+func MCTSLoop(g GameState) {
+	tree := GameTree{
 		root: &treeNode{
-			data:     *g,
+			data:     g,
 			parent:   nil,
 			children: []treeNode{},
 			expanded: false,
@@ -95,6 +99,7 @@ func MCTSLoop(g *GameState) {
 
 func (t treeNode) rollout() int {
 	currentState := t.data
+	j := 0
 	for {
 		if r, res := currentState.Result(); r {
 			return res
@@ -102,6 +107,10 @@ func (t treeNode) rollout() int {
 		nextMoves := currentState.Moves()
 		i := rand.Intn(len(nextMoves))
 		currentState = nextMoves[i]
+		j++
+		if (j % 100) == 0 {
+			println(j)
+		}
 	}
 }
 

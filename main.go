@@ -5,15 +5,18 @@ import (
 
 	"fmt"
 	"github.com/njm256/vezir/engine"
-	"github.com/njm256/vezir/position"
+	//"github.com/njm256/vezir/position"
 )
 
 func main() {
-
-	//a := position.NewFen(os.Args[1])
-	//fmt.Println(a)
-	var g engine.GameState
-	g = position.NewGame()
-	calc := (*engine.MCTS(&g, 10)).(position.Game)
-	fmt.Println(position.GameToFen(calc))
+	/*
+		a := position.NewFen(os.Args[1])
+		fmt.Println(a)
+		g := engine.GameState(position.NewGame())
+		calc := (*engine.MCTS(&g, 10)).(position.Game)
+		fmt.Println(position.GameToFen(calc))
+	*/
+	g := engine.NewGame()
+	calc := engine.MCTS(g, 1).(*engine.Game)
+	fmt.Println(calc.String())
 }

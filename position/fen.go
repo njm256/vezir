@@ -44,7 +44,7 @@ func NewFen(str string) *Fen {
 }
 
 func (f Fen) String() string {
-	return f.colorString()
+	return f.simpleString()
 }
 
 func (f Fen) simpleString() string {
